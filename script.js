@@ -41,7 +41,6 @@ function loadHighScore() {
 
 loadHighScore();
 
-
 function startGame() {
   if (gameActive) return;
   gameActive = true;
@@ -50,9 +49,7 @@ function startGame() {
   timerDisplay.textContent = timeLeft;
   missedStrikes = 0;
 
-  score = 0;
   scoreDisplay.textContent = score;
-  round = 1;
   moleSpeed = 1;
   roundDisplay.innerText = round;
   missedStrikesDisplay.textContent = missedStrikes;
@@ -64,73 +61,103 @@ function startGame() {
     timerDisplay.textContent = timeLeft;
     if (timeLeft <= 0) {
       clearInterval(gameTime);
-      startBtn.disabled = false;
-      round++;
-      moleSpeed *= 0.95;
-      roundDisplay.innerText = round;
-      gameActive = false;
-      if (round <= 9) {
-        startGame();
-      }
-
-      if (score > highScore) {
-        highScore = score;
-        highScoreDisplay.textContent = highScore;
-
-        // Save the high score to localStorage
-        localStorage.setItem("highScore", highScore);
-      }
-
-      // Game over alert and refresh the page
-      alert("Game Over! Your score: " + score);
-      location.reload();
+      startNextRound();
     }
   }, 1000);
 
-  showMole();
-}
-function showMole() {
-  let numberOfMoles;
-  if (round <= 5) {
-    numberOfMoles = 1;
-  } else if (round <= 9) {
-    numberOfMoles = 2;
-  } else {
-    numberOfMoles = 3;
+  // Add the following function
+  function startNextRound() {
+    startBtn.disabled = false;
+    round++;
+    moleSpeed *= 0.95;
+    roundDisplay.innerText = round;
+    gameActive = false;
+    if (round <= 9) {
+      startGame();
+    }
   }
 
-  for (let i = 0; i < numberOfMoles; i++) {
-    const moleTime = Math.floor((Math.random() * 2000) + 1000) * moleSpeed;
-    const hole = randomHole(holes);
-    const mole = document.createElement("div");
-    mole.classList.add("mole");
-    mole.id = "mole-" + Date.now() + "-" + i; // Add a unique identifier to each mole
-    hole.appendChild(mole);
-    mole.addEventListener("click", hitMole); // Add event listener to each mole individually
+  function showMole() {
+    let numberOfMoles;
+    if (round <= 5) {
+      numberOfMoles = 1;
+    } else if (round <= 9) {
+      numberOfMoles = 2;
+    } else {
+      numberOfMoles = 3;
+    }
 
-    setTimeout(() => {
-      if (mole.parentElement) {
-        hole.removeChild(mole);
-        missedStrikes++;
-        missedStrikesDisplay.textContent = missedStrikes;
-        playMissedMoleAudio();
-        if (missedStrikes >= 3) {
-          clearInterval(gameTime);
-          startBtn.disabled = false;
-          gameActive = false;
-          alert("Game Over! Your score: " + score);
-          round = 1;
-          moleSpeed = 1;
-          score = 0;
-          scoreDisplay.textContent = score;
+    for (let i = 0; i < numberOfMoles; i++) {
+      const moleTime = Math.floor(Math.random() * (2000 - moleSpeed * 100) + 1000);
+      const hole = randomHole(holes);
+
+      // Determine if this iteration should show a bomb instead of a mole
+      const showBomb = i === 0 && round > 1; // Only show a bomb in the first iteration and if the round is greater than 1
+
+      const creature = document.createElement("div");
+      if (showBomb) {
+        creature.classList.add("bomb");
+        creature.id = "bomb-" + Date.now() + "-" + i; // Add a unique identifier to each bomb
+        creature.addEventListener("click", hitBomb); // Add event listener to each bomb individually
+      } else {
+        creature.classList.add("mole");
+        creature.id = "mole-" + Date.now() + "-" + i; // Add a unique identifier to each mole
+        creature.addEventListener("click", hitMole); // Add event listener to each mole individually
+      }
+
+      hole.appendChild(creature);
+
+      setTimeout(() => {
+        if (creature.parentElement) {
+          hole.removeChild(creature);
+          if (!showBomb) {
+            missedStrikes++;
+            missedStrikesDisplay.textContent = missedStrikes;
+            playMissedMoleAudio();
+            if (missedStrikes >= 3) {
+              gameOver();
+            }
+          }
         }
-      }
-      hole.removeEventListener("click", hitMole);
-      if (timeLeft > 0 && gameActive) {
-        showMole();
-      }
-    }, moleTime);
+        hole.removeEventListener("click", showBomb ? hitBomb : hitMole);
+      }, moleTime);
+    }
   }
+
+  function hitBomb(e) {
+    if (!e.isTrusted) return;
+    clearInterval(gameTime);
+    startBtn.disabled = false;
+    gameActive = false;
+
+    if (score > highScore) {
+      highScore = score;
+      highScoreDisplay.textContent = highScore;
+      localStorage.setItem("highScore", highScore);
+    }
+
+    clearInterval(gameInterval); // Add this line
+    alert("Game Over! You hit a bomb. Your score: " + score);
+    location.reload();
+  }
+
+
+function gameOver() {
+  clearInterval(gameTime);
+  startBtn.disabled = false;
+  gameActive = false;
+
+  if (score > highScore) {
+    highScore = score;
+    highScoreDisplay.textContent = highScore;
+
+    // Save the high score to localStorage
+    localStorage.setItem("highScore", highScore);
+  }
+
+  // Game over alert and refresh the page
+  alert("Game Over! Your score: " + score);
+  location.reload();
 }
 
 function randomHole(holes) {
@@ -170,3 +197,6 @@ setVolume(volumeControl.value);
 volumeControl.addEventListener("input", (event) => {
   setVolume(event.target.value);
 });
+}
+
+
