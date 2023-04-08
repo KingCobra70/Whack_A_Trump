@@ -1,0 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+body {
+  font-family: 'Press Start 2P', cursive;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #040d21;
+  color: #fff;
+  flex-direction: column;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+}
+
+.section {
+  flex: 1;
+  max-width: 50%;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.game-info {
+  position: relative;
+  text-align: center;
+  padding: 0;
+  margin-right: 10px;
+  background-color: #000;
+  border-radius: 10px;
+  border: 4px solid #3CB371;
+  box-shadow: 0 0 10px #3CB371;
+}
+
+.game-info h1 {
+  text-align: center;
+  animation: neon 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes neon {
+  from {
+    text-shadow: 0 0 10px #3CB371, 0 0 20px #3CB371, 0 0 30px #3CB371, 0 0 40px #3CB371;
+  }
+  to {
+    text-shadow: 0 0 20px #3CB371, 0 0 30px #3CB371, 0 0 40px #3CB371, 0 0 50px #3CB371;
+  }
+}
+
+.game-info * {
+  text-shadow: 0 0 5px #3CB371, 0 0 10px #3CB371, 0 0 20px #3CB371, 0 0 30px #3CB371;
+}
+
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  grid-gap: 10px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  user-select: none;
+  padding: 10px;
+  padding-bottom: 20px; /* Fix the padding at the bottom */
+  background-color: #222;
+  border-radius: 10px;
+  border: 3px solid #3CB371;
+  overflow: hidden; /* Add overflow hidden */
+}
+
+.game-board::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 95%, rgba(255, 255, 255, 0.05) 98%, rgba(255, 255, 255, 0.05) 100%); /* Add scanline effect */
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.hole {
+  width: 100%;
+  height: 0;
+  padding-bottom: calc(100% - 4px);
+  background: url("hole.png");
+  background-size: contain;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  box-shadow: inset 0 0 10px #3CB371, inset 0 0 20px #3CB371; /* Add inner glow */
+}
+
+
+.hole {
+  width: 100%;
+  height: 0;
+  padding-bottom: calc(100% - 4px);
+  background: url("hole.png");
+  background-size: contain;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}  
+
+.mole {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 110px;
+  background-image: url("mole.png");
+  background-size: cover;
+  background-position: center;
+  transition: bottom 0.5s;
+}
+
+.info-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+button {
+  background-color: #3CB371;
+  color: #000;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 12px;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-shadow: 0 0 5px #3CB371, 0 0 10px #3CB371, 0 0 20px #3CB371, 0 0 30px #3CB371;
+}
+
+.user-select-none {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+
+
+
+
+
