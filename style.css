@@ -154,13 +154,16 @@ button {
 
 
 .bomb {
-  background-image: url('bomb.png');
-  background-size: cover;
-  width: 100%;
-  height: 100%;
   position: absolute;
-  top: 100%;
-  transition: all 0.5s;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 110px;
+  background-image: url("bomb.png");
+  background-size: cover;
+  background-position: center;
+  transition: bottom 0.5s;
 }
 
 

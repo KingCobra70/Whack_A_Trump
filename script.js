@@ -17,7 +17,8 @@ let round = 1;
 let moleSpeed = 1;
 let gameActive = false;
 let moleActive = false;
-
+let bombShown = false;
+let moleInterval; 
 
 startBtn.addEventListener("click", startGame);
 
@@ -40,7 +41,6 @@ function loadHighScore() {
 }
 
 loadHighScore();
-
 function startGame() {
   if (gameActive) return;
   gameActive = true;
@@ -65,129 +65,134 @@ function startGame() {
     }
   }, 1000);
 
-  // Add the following function
-  function startNextRound() {
-    startBtn.disabled = false;
-    round++;
-    moleSpeed *= 0.95;
-    roundDisplay.innerText = round;
-    gameActive = false;
-    if (round <= 9) {
-      startGame();
-    }
+  bombShown = false; // Reset bombShown when the next round starts
+
+  // Update this line to set moleInterval
+  moleInterval = setInterval(showMole, 2000);
+}
+
+function startNextRound() {
+  startBtn.disabled = false;
+  round++;
+  moleSpeed *= 0.95;
+  roundDisplay.innerText = round;
+  gameActive = false;
+  if (round <= 9) {
+    clearInterval(moleInterval); // Clear the moleInterval before starting the next round
+    startGame();
+  }
+}
+function showMole() {
+  let numberOfMoles;
+  if (round <= 5) {
+    numberOfMoles = 1;
+  } else if (round <= 9) {
+    numberOfMoles = 2;
+  } else {
+    numberOfMoles = 3;
   }
 
-  function showMole() {
-    let numberOfMoles;
-    if (round <= 5) {
-      numberOfMoles = 1;
-    } else if (round <= 9) {
-      numberOfMoles = 2;
+  const bombIndex = round > 1 ? Math.floor(Math.random() * numberOfMoles) : -1;
+
+  for (let i = 0; i < numberOfMoles; i++) {
+    const moleTime = Math.floor(Math.random() * (1500 - moleSpeed * 100) + 500);
+    const hole = randomHole(holes);
+
+    const showBomb = !bombShown && round > 1 && Math.random() < 1 / numberOfMoles;
+
+    const creature = document.createElement("div");
+    if (showBomb) {
+      bombShown = true;
+      creature.classList.add("bomb");
+      creature.id = "bomb-" + Date.now() + "-" + i;
+      creature.addEventListener("click", hitBomb);
     } else {
-      numberOfMoles = 3;
+      creature.classList.add("mole");
+      creature.id = "mole-" + Date.now() + "-" + i;
+      creature.addEventListener("click", hitMole);
     }
 
-    for (let i = 0; i < numberOfMoles; i++) {
-      const moleTime = Math.floor(Math.random() * (2000 - moleSpeed * 100) + 1000);
-      const hole = randomHole(holes);
+    hole.appendChild(creature);
 
-      // Determine if this iteration should show a bomb instead of a mole
-      const showBomb = i === 0 && round > 1; // Only show a bomb in the first iteration and if the round is greater than 1
-
-      const creature = document.createElement("div");
-      if (showBomb) {
-        creature.classList.add("bomb");
-        creature.id = "bomb-" + Date.now() + "-" + i; // Add a unique identifier to each bomb
-        creature.addEventListener("click", hitBomb); // Add event listener to each bomb individually
-      } else {
-        creature.classList.add("mole");
-        creature.id = "mole-" + Date.now() + "-" + i; // Add a unique identifier to each mole
-        creature.addEventListener("click", hitMole); // Add event listener to each mole individually
-      }
-
-      hole.appendChild(creature);
-
-      setTimeout(() => {
-        if (creature.parentElement) {
-          hole.removeChild(creature);
-          if (!showBomb) {
-            missedStrikes++;
-            missedStrikesDisplay.textContent = missedStrikes;
-            playMissedMoleAudio();
-            if (missedStrikes >= 3) {
-              gameOver();
-            }
+    setTimeout(() => {
+      if (creature.parentElement) {
+        hole.removeChild(creature);
+        if (!showBomb) {
+          missedStrikes++;
+          missedStrikesDisplay.textContent = missedStrikes;
+          playMissedMoleAudio();
+          if (missedStrikes >= 3) {
+            gameOver();
           }
         }
-        hole.removeEventListener("click", showBomb ? hitBomb : hitMole);
-      }, moleTime);
-    }
+      }
+      creature.removeEventListener("click", showBomb ? hitBomb : hitMole); // Fix this line
+    }, moleTime);
   }
+}
+function hitBomb(e) {
+if (!e.isTrusted) return;
+clearInterval(gameTime);
+startBtn.disabled = false;
+gameActive = false;
 
-  function hitBomb(e) {
-    if (!e.isTrusted) return;
-    clearInterval(gameTime);
-    startBtn.disabled = false;
-    gameActive = false;
+if (score > highScore) {
+highScore = score;
+highScoreDisplay.textContent = highScore;
+localStorage.setItem("highScore", highScore);
+}
 
-    if (score > highScore) {
-      highScore = score;
-      highScoreDisplay.textContent = highScore;
-      localStorage.setItem("highScore", highScore);
-    }
-
-    clearInterval(gameInterval); // Add this line
-    alert("Game Over! You hit a bomb. Your score: " + score);
-    location.reload();
-  }
-
+alert("Game Over! You hit a bomb. Your score: " + score);
+location.reload();
+}
 
 function gameOver() {
-  clearInterval(gameTime);
-  startBtn.disabled = false;
-  gameActive = false;
+clearInterval(gameTime);
+startBtn.disabled = false;
+gameActive = false;
 
-  if (score > highScore) {
-    highScore = score;
-    highScoreDisplay.textContent = highScore;
+if (score > highScore) {
+highScore = score;
+highScoreDisplay.textContent = highScore;
 
-    // Save the high score to localStorage
-    localStorage.setItem("highScore", highScore);
-  }
+// Save the high score to localStorage
+localStorage.setItem("highScore", highScore);
+}
 
-  // Game over alert and refresh the page
-  alert("Game Over! Your score: " + score);
-  location.reload();
+// Game over alert and refresh the page
+alert("Game Over! Your score: " + score);
+location.reload();
 }
 
 function randomHole(holes) {
-  const idx = Math.floor(Math.random() * holes.length);
-  const hole = holes[idx];
-  if (hole === lastHole) {
-    return randomHole(holes);
-  }
-  lastHole = hole;
-  return hole;
+const idx = Math.floor(Math.random() * holes.length);
+const hole = holes[idx];
+if (hole === lastHole) {
+return randomHole(holes);
+}
+lastHole = hole;
+return hole;
 }
 
 function hitMole(e) {
-  if (!e.isTrusted) return;
-  score += 10;
-  scoreDisplay.textContent = score;
-  const mole = e.target.closest(".mole");
-  if (mole) {
-    mole.parentElement.removeChild(mole);
-    mole.removeEventListener("click", hitMole); // Remove event listener from the hit mole
-  }
+if (!e.isTrusted) return;
+score += 10;
+scoreDisplay.textContent = score;
+const mole = e.target.closest(".mole");
+if (mole) {
+mole.parentElement.removeChild(mole);
+mole.removeEventListener("click", hitMole); // Remove event listener from the hit mole
 }
+}
+
 // Get the audio elements and the volume control input
 const missedMoleSound = document.getElementById("missed-mole-sound");
 const volumeControl = document.getElementById("volume");
 
 // Function to set the volume of the audio elements
 function setVolume(volume) {
-  startSound.volume = volume;
-  missedMoleSound.volume = volume;
+startSound.volume = volume;
+missedMoleSound.volume = volume;
 }
 
 // Set the initial volume
@@ -195,8 +200,5 @@ setVolume(volumeControl.value);
 
 // Add event listener for the volume control input
 volumeControl.addEventListener("input", (event) => {
-  setVolume(event.target.value);
+setVolume(event.target.value);
 });
-}
-
-
